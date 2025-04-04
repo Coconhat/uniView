@@ -60,14 +60,6 @@ export default function Home() {
                 <div className="h-px bg-white/10 w-full" />
               </div>
             </div>
-            <Link
-              href="https://github.com/coconhat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 relative opacity-80 hover:opacity-100 transition-opacity"
-            >
-              <p> Made by Nv</p>
-            </Link>
           </div>
         </div>
 
