@@ -60,17 +60,12 @@ export default function Home() {
               </div>
             </div>
             <Link
-              href="https://lumalabs.ai"
+              href="https://github.com/coconhat"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 relative opacity-80 hover:opacity-100 transition-opacity"
             >
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LumaLogo%201-MA3upjPymxFHKoHJgpdAUfZMeKGq3i.png"
-                alt="Luma Logo"
-                fill
-                className="object-contain"
-              />
+              <p> Made by Nv</p>
             </Link>
           </div>
         </div>

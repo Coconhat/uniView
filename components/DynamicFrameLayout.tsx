@@ -6,10 +6,15 @@ import { FrameComponent } from "./FrameComponent";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import DLSL from "@/public/dlsl-logoo.png";
+import DLSL from "@/public/dlsl.png";
 import DLSU from "@/public/dlsu-logo.png";
 import UP from "@/public/up-logo.png";
-import UST from "@/public/ust-logo.png";
+import UST from "@/public/ust-logo.jpg";
+import LPU from "@/public/lpu-logo.png";
+import ATENEO from "@/public/ateneo-logo.png";
+import POLY from "@/public/poly-logo.png";
+import NU from "@/public/nu-logo.png";
+import UE from "@/public/ue-logo.png";
 const GRID_SIZE = 12;
 const CELL_SIZE = 60; // pixels per grid cell
 
@@ -66,7 +71,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 4,
-    image: UST,
+    image: ATENEO,
 
     defaultPos: { x: 0, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
@@ -79,7 +84,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 5,
-    image: "https://via.placeholder.com/400x400",
+    image: UST,
 
     defaultPos: { x: 4, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
@@ -92,7 +97,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 6,
-    image: "https://via.placeholder.com/400x400",
+    image: LPU,
 
     defaultPos: { x: 8, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
@@ -105,7 +110,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 7,
-    image: "https://via.placeholder.com/400x400",
+    image: POLY,
 
     defaultPos: { x: 0, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
@@ -118,7 +123,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 8,
-    image: "https://via.placeholder.com/400x400",
+    image: NU,
 
     defaultPos: { x: 4, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
@@ -131,7 +136,7 @@ const initialFrames: Frame[] = [
   },
   {
     id: 9,
-    image: "https://via.placeholder.com/400x400",
+    image: UE,
 
     defaultPos: { x: 8, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
