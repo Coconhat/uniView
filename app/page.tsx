@@ -36,10 +36,11 @@ export default function Home() {
                 <div className="h-px bg-white/10 w-full" />
                 <p>
                   Choosing the right school is one of the biggest decisions
-                  you’ll make—and we’re here to help! School Reviews is a
-                  student-powered platform where you can find real, unbiased
-                  ratings and feedback about universities and colleges across
-                  the Philippines.
+                  you’ll make—and we’re here to help!{" "}
+                  <span style={{ textDecoration: "underline" }}>Uni View</span>{" "}
+                  is a platform where you can find real, unbiased ratings and
+                  feedback about universities and colleges across the
+                  Philippines.
                 </p>
                 <ul className="list-disc list-inside">
                   <li>Looking for the best school for your dream course?</li>
