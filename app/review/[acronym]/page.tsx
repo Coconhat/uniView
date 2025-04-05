@@ -34,7 +34,6 @@ export default function Page({ params }: { params: { acronym: string } }) {
   const { acronym } = React.use(params);
 
   const { university, loading, error } = useFetchUniversity(acronym);
-  // Fetch reviews - MOVED BEFORE CONDITIONAL RETURNS
   useEffect(() => {
     const fetchReviews = async () => {
       if (!university) return;
