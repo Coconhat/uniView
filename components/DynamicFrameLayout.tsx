@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
 import { Slider } from "@/components/ui/slider";
@@ -15,6 +15,10 @@ import ATENEO from "@/public/ateneo-logo.png";
 import POLY from "@/public/poly-logo.png";
 import NU from "@/public/nu-logo.png";
 import UE from "@/public/ue-logo.png";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { inter } from "@/app/fonts";
+
 const GRID_SIZE = 12;
 const CELL_SIZE = 60; // pixels per grid cell
 
@@ -29,6 +33,8 @@ interface Frame {
   borderThickness: number;
   borderSize: number;
   isHovered: boolean;
+  acronym: string;
+  name: string; // Added full name for better UX
 }
 
 const initialFrames: Frame[] = [
@@ -43,6 +49,8 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "DLSL",
+    name: "De La Salle Lipa",
   },
   {
     id: 2,
@@ -55,12 +63,13 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "DLSU",
+    name: "De La Salle University",
   },
   {
     id: 3,
     image: UP,
     defaultPos: { x: 8, y: 0, w: 4, h: 4 },
-
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
     edgeVertical: "https://via.placeholder.com/50",
@@ -68,11 +77,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "UP",
+    name: "University of the Philippines",
   },
   {
     id: 4,
     image: ATENEO,
-
     defaultPos: { x: 0, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -81,11 +91,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "ATENEO",
+    name: "Ateneo de Manila University",
   },
   {
     id: 5,
     image: UST,
-
     defaultPos: { x: 4, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -94,11 +105,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "UST",
+    name: "University of Santo Tomas",
   },
   {
     id: 6,
     image: LPU,
-
     defaultPos: { x: 8, y: 4, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -107,11 +119,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "LPU",
+    name: "Lyceum of the Philippines University",
   },
   {
     id: 7,
     image: POLY,
-
     defaultPos: { x: 0, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -120,11 +133,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "POLY",
+    name: "Polytechnic University of the Philippines",
   },
   {
     id: 8,
     image: NU,
-
     defaultPos: { x: 4, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -133,11 +147,12 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "NU",
+    name: "National University",
   },
   {
     id: 9,
     image: UE,
-
     defaultPos: { x: 8, y: 8, w: 4, h: 4 },
     corner: "https://via.placeholder.com/50",
     edgeHorizontal: "https://via.placeholder.com/50",
@@ -146,19 +161,39 @@ const initialFrames: Frame[] = [
     borderThickness: 0,
     borderSize: 80,
     isHovered: false,
+    acronym: "UE",
+    name: "University of the East",
   },
 ];
 
 export default function DynamicFrameLayout() {
   const [frames, setFrames] = useState<Frame[]>(initialFrames);
-  const [hovered, setHovered] = useState<{ row: number; col: number } | null>(
-    null
-  );
+  const [hovered, setHovered] = useState<{
+    row: number;
+    col: number;
+    id: number;
+  } | null>(null);
   const [hoverSize, setHoverSize] = useState(6);
   const [gapSize, setGapSize] = useState(4);
   const [showControls, setShowControls] = useState(false);
   const [cleanInterface, setCleanInterface] = useState(true);
-  const [showFrames, setShowFrames] = useState(false); // Update: showFrames starts as false
+  const [showFrames, setShowFrames] = useState(false);
+  const router = useRouter();
+
+  const GRID_COLUMNS = 3; // 3 columns per row
+  const CELL_SIZE = 4; // Each cell is 4x4 grid units
+
+  const calculatePosition = (index: number) => {
+    const row = Math.floor(index / GRID_COLUMNS);
+    const col = index % GRID_COLUMNS;
+
+    return {
+      x: col * CELL_SIZE,
+      y: row * CELL_SIZE,
+      w: CELL_SIZE,
+      h: CELL_SIZE,
+    };
+  };
 
   const getRowSizes = () => {
     if (hovered === null) {
@@ -211,13 +246,19 @@ export default function DynamicFrameLayout() {
     }
   };
 
-  const updateCodebase = () => {
-    console.log("Updating codebase with current values:");
-    console.log("Hover Size:", hoverSize);
-    console.log("Gap Size:", gapSize);
-    console.log("Frames:", frames);
-    // Here you would typically make an API call to update the codebase
-    // For now, we'll just log the values
+  const handleFrameHover = (row: number, col: number, id: number) => {
+    setHovered({ row, col, id });
+    // Update hovered state for individual frames
+    setFrames(
+      frames.map((frame) => ({
+        ...frame,
+        isHovered: frame.id === id,
+      }))
+    );
+  };
+
+  const handleFrameClick = (acronym: string) => {
+    router.push(`/review/${acronym}`);
   };
 
   return (
@@ -234,7 +275,6 @@ export default function DynamicFrameLayout() {
             <Button onClick={toggleControls}>
               {showControls ? "Hide Controls" : "Show Controls"}
             </Button>
-            <Button onClick={updateCodebase}>Update Codebase</Button>
             <Button onClick={toggleCleanInterface}>
               {cleanInterface ? "Show UI" : "Hide UI"}
             </Button>
@@ -295,47 +335,63 @@ export default function DynamicFrameLayout() {
             frame.defaultPos.x,
             frame.defaultPos.y
           );
+          const isCurrentlyHovered = hovered?.id === frame.id;
 
           return (
             <motion.div
               key={frame.id}
-              className="relative flex flex-col"
+              className={`relative flex flex-col cursor-pointer group overflow-hidden rounded-lg ${
+                isCurrentlyHovered ? "z-10" : ""
+              }`}
               style={{ transformOrigin }}
-              onMouseEnter={() => setHovered({ row, col })}
+              onMouseEnter={() => handleFrameHover(row, col, frame.id)}
               onMouseLeave={() => setHovered(null)}
+              onClick={() => handleFrameClick(frame.acronym)}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
-              <FrameComponent
-                image={frame.image}
-                width="100%"
-                height="100%"
-                className="flex-1"
-                corner={frame.corner}
-                edgeHorizontal={frame.edgeHorizontal}
-                edgeVertical={frame.edgeVertical}
-                mediaSize={frame.mediaSize}
-                borderThickness={frame.borderThickness}
-                borderSize={frame.borderSize}
-                onMediaSizeChange={(value) =>
-                  updateFrameProperty(frame.id, "mediaSize", value)
-                }
-                onBorderThicknessChange={(value) =>
-                  updateFrameProperty(frame.id, "borderThickness", value)
-                }
-                onBorderSizeChange={(value) =>
-                  updateFrameProperty(frame.id, "borderSize", value)
-                }
-                showControls={showControls && !cleanInterface}
-                label={`Frame ${frame.id}`}
-                showFrame={showFrames}
-                isHovered={hovered?.row === row && hovered?.col === col}
-              />
-              {/* <Button
-                className="mt-2 w-full"
-                variant="outline"
-                onClick={() => console.log(`Clicked frame ${frame.id}`)}
-              >
-                Review
-              </Button> */}
+              <div className="relative flex-1 w-full h-full">
+                <FrameComponent
+                  image={frame.image}
+                  width="100%"
+                  height="100%"
+                  className="flex-1"
+                  corner={frame.corner}
+                  edgeHorizontal={frame.edgeHorizontal}
+                  edgeVertical={frame.edgeVertical}
+                  mediaSize={frame.mediaSize}
+                  borderThickness={frame.borderThickness}
+                  borderSize={frame.borderSize}
+                  onMediaSizeChange={(value) =>
+                    updateFrameProperty(frame.id, "mediaSize", value)
+                  }
+                  onBorderThicknessChange={(value) =>
+                    updateFrameProperty(frame.id, "borderThickness", value)
+                  }
+                  onBorderSizeChange={(value) =>
+                    updateFrameProperty(frame.id, "borderSize", value)
+                  }
+                  showControls={showControls && !cleanInterface}
+                  label={frame.name}
+                  showFrame={showFrames}
+                  isHovered={isCurrentlyHovered}
+                />
+
+                {/* Overlay with university name and "View Reviews" button  */}
+                <div
+                  className={`z-50 absolute inset-0 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300 ${
+                    isCurrentlyHovered ? " bg-opacity-60" : "opacity-0"
+                  } group-hover:opacity-100  group-hover:bg-opacity-60`}
+                >
+                  <div className="text-center px-4  rounded-full py-2 ">
+                    <h3
+                      className={`text-[#141414]  bg-white rounded-xl  text-xl font-bold mb-2 py-1 px-2 ${inter.className} `}
+                    >
+                      {frame.name}
+                    </h3>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           );
         })}
