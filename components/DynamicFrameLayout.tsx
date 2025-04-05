@@ -34,11 +34,13 @@ export default function DynamicFrameLayout() {
     id: number;
   } | null>(null);
   const [gridColumns, setGridColumns] = useState(3);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
-      setGridColumns(isMobile ? 1 : 3);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setGridColumns(mobile ? 1 : 3);
     };
 
     handleResize();
@@ -73,13 +75,15 @@ export default function DynamicFrameLayout() {
   }, [university, gridColumns]);
 
   const handleFrameHover = (row: number, col: number, id: number) => {
-    setHoveredFrame({ row, col, id });
-    setFrames((frames) =>
-      frames.map((frame) => ({
-        ...frame,
-        isHovered: frame.id === id,
-      }))
-    );
+    if (!isMobile) {
+      setHoveredFrame({ row, col, id });
+      setFrames((frames) =>
+        frames.map((frame) => ({
+          ...frame,
+          isHovered: frame.id === id,
+        }))
+      );
+    }
   };
 
   const handleFrameClick = (acronym: string) => {
@@ -87,7 +91,7 @@ export default function DynamicFrameLayout() {
   };
 
   const getGridTemplate = (type: "rows" | "columns") => {
-    if (!hoveredFrame) {
+    if (!hoveredFrame || isMobile) {
       const size = `${CELL_SIZE_GRID_UNITS}fr`;
       if (type === "columns") {
         return Array.from({ length: gridColumns }, () => size).join(" ");
@@ -124,53 +128,89 @@ export default function DynamicFrameLayout() {
 
   return (
     <div className="w-full h-full">
-      <div
-        className="relative w-full h-full grid gap-4"
-        style={{
-          gridTemplateRows: getGridTemplate("rows"),
-          gridTemplateColumns: getGridTemplate("columns"),
-          gridAutoRows: `${CELL_SIZE_GRID_UNITS}fr`,
-          gridAutoColumns: `${CELL_SIZE_GRID_UNITS}fr`,
-          transition:
-            "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
-        }}
-      >
-        {frames.map((frame) => {
-          const { id, defaultPos, image, name, acronym, isHovered } = frame;
-          const row = Math.floor(defaultPos.y / CELL_SIZE_GRID_UNITS);
-          const col = Math.floor(defaultPos.x / CELL_SIZE_GRID_UNITS);
+      {isMobile ? (
+        // Mobile layout
+        <div className="flex flex-col gap-6 w-full pb-8">
+          {frames.map((frame) => {
+            const { id, image, name, acronym } = frame;
 
-          return (
-            <motion.div
-              key={id}
-              className={`relative flex flex-col cursor-pointer group overflow-hidden rounded-lg ${
-                isHovered ? "z-10" : ""
-              }`}
-              style={{
-                transformOrigin: getTransformOrigin(defaultPos.x, defaultPos.y),
-              }}
-              onMouseEnter={() => handleFrameHover(row, col, id)}
-              onMouseLeave={() => setHoveredFrame(null)}
-              onClick={() => handleFrameClick(acronym)}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="relative flex-1 w-full h-full">
-                <FrameComponent
-                  image={image}
-                  width="100%"
-                  height="100%"
-                  className="flex-1"
-                  label={name}
-                  isHovered={isHovered}
-                  showFrame={isHovered}
-                />
+            return (
+              <div
+                key={id}
+                className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-hidden"
+                onClick={() => handleFrameClick(acronym)}
+              >
+                <div className="relative h-40 flex items-center justify-center p-4">
+                  {/* Image container with fixed dimensions */}
+                  <div className="relative w-full h-full max-h-32 flex items-center justify-center">
+                    <img
+                      src={image}
+                      alt={`${name} logo`}
+                      className="max-w-full max-h-full object-contain"
+                      style={{ maxHeight: "150px" }}
+                    />
+                  </div>
+                </div>
+                <div className="p-4 text-center ">
+                  <p className="text-base font-medium">{name}</p>
+                </div>
               </div>
-              <p className="text-center p-2 text-sm font-medium">{name}</p>
-            </motion.div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        // Desktop layout - original grid with hover effects
+        <div
+          className="relative w-full h-full grid gap-4"
+          style={{
+            gridTemplateRows: getGridTemplate("rows"),
+            gridTemplateColumns: getGridTemplate("columns"),
+            gridAutoRows: `${CELL_SIZE_GRID_UNITS}fr`,
+            gridAutoColumns: `${CELL_SIZE_GRID_UNITS}fr`,
+            transition:
+              "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
+          }}
+        >
+          {frames.map((frame) => {
+            const { id, defaultPos, image, name, acronym, isHovered } = frame;
+            const row = Math.floor(defaultPos.y / CELL_SIZE_GRID_UNITS);
+            const col = Math.floor(defaultPos.x / CELL_SIZE_GRID_UNITS);
+
+            return (
+              <motion.div
+                key={id}
+                className={`relative flex flex-col cursor-pointer group overflow-hidden rounded-lg ${
+                  isHovered ? "z-10" : ""
+                }`}
+                style={{
+                  transformOrigin: getTransformOrigin(
+                    defaultPos.x,
+                    defaultPos.y
+                  ),
+                }}
+                onMouseEnter={() => handleFrameHover(row, col, id)}
+                onMouseLeave={() => setHoveredFrame(null)}
+                onClick={() => handleFrameClick(acronym)}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="relative flex-1 w-full h-full">
+                  <FrameComponent
+                    image={image}
+                    width="100%"
+                    height="100%"
+                    className="flex-1"
+                    label={name}
+                    isHovered={isHovered}
+                    showFrame={isHovered}
+                  />
+                </div>
+                <p className="text-center p-2 text-sm font-medium">{name}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
