@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { set } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Form } from "react-hook-form";
+import { useFetchUniversity } from "@/hooks/use-fetch-uni";
 
 export default function Page({ params }: { params: { acronym: string } }) {
   const [headerSize] = useState(1.2);
@@ -29,33 +30,10 @@ export default function Page({ params }: { params: { acronym: string } }) {
   const [rating, setRating] = useState<number>(0);
   const [reviews, setReviews] = useState<any[]>([]);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const [university, setUniversity] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<any>(null);
 
   const { acronym } = React.use(params);
 
-  useEffect(() => {
-    const fetchUniversity = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("university")
-          .select("*")
-          .ilike("acronym", acronym)
-          .maybeSingle();
-
-        if (error) throw error;
-        setUniversity(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUniversity();
-  }, [acronym]);
-
+  const { university, loading, error } = useFetchUniversity(acronym);
   // Fetch reviews - MOVED BEFORE CONDITIONAL RETURNS
   useEffect(() => {
     const fetchReviews = async () => {
@@ -107,8 +85,10 @@ export default function Page({ params }: { params: { acronym: string } }) {
       setReviews(data || []);
       setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      setError("failed to submit review");
     }
+    setRating(0);
+    setHoverRating(0);
   };
 
   //calculate average rating
@@ -264,7 +244,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
           <DialogContent className="sm:max-w-[500px] bg-[#1e1e1e] border-[#2e2e2e]">
             <AlertDialogHeader>
               <DialogTitle
-                className={`text-xl font-semibold text-white $interger{inter.className}`}
+                className={`text-xl font-semibold text-white ${inter.className}`}
               >
                 Write Your Review
               </DialogTitle>
