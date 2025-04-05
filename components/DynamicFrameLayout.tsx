@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
 import { useRouter } from "next/navigation";
 import { useFetchAllUniversity } from "@/hooks/use-fetch-all-universities";
+import LoadingState from "./loading-state";
+import ErrorState from "./error-state";
+import NotFoundState from "./not-found-state";
 
 interface University {
   id: number;
@@ -119,12 +122,9 @@ export default function DynamicFrameLayout() {
     return `${vertical} ${horizontal}`;
   };
 
-  if (loading)
-    return <div className="text-center p-8">Loading universities...</div>;
-  if (error)
-    return (
-      <div className="text-red-500 text-center p-8">Error: {error.message}</div>
-    );
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  if (!university) return <NotFoundState />;
 
   return (
     <div className="w-full h-full">

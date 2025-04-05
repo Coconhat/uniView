@@ -22,6 +22,9 @@ import { set } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Form } from "react-hook-form";
 import { useFetchUniversity } from "@/hooks/use-fetch-uni";
+import LoadingState from "@/components/loading-state";
+import ErrorState from "@/components/error-state";
+import NotFoundState from "@/components/not-found-state";
 
 export default function Page({ params }: { params: { acronym: string } }) {
   const [headerSize] = useState(1.2);
@@ -54,14 +57,9 @@ export default function Page({ params }: { params: { acronym: string } }) {
     fetchReviews();
   }, [university]);
 
-  if (loading)
-    return <div className="text-white text-center p-8">Loading...</div>;
-  if (error)
-    return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!university)
-    return (
-      <div className="text-white text-center p-8">University not found</div>
-    );
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  if (!university) return <NotFoundState />;
 
   const handleReviewSubmit = async (formData: FormData) => {
     if (!university) return;
