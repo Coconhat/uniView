@@ -53,7 +53,7 @@ export default function Home() {
         </div>
 
         {/* Right Content */}
-        <div className="w-full md:flex-grow h-[60vh] md:h-[80vh]">
+        <div className="w-full md:flex-grow  md:h-[80vh]">
           <DynamicFrameLayout />
         </div>
       </div>
