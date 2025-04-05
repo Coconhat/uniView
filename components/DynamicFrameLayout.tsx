@@ -21,7 +21,6 @@ interface Frame {
   isHovered: boolean;
 }
 
-const GRID_COLUMNS = 3;
 const CELL_SIZE_GRID_UNITS = 4;
 const DEFAULT_HOVER_SIZE = 6;
 
@@ -34,12 +33,24 @@ export default function DynamicFrameLayout() {
     col: number;
     id: number;
   } | null>(null);
+  const [gridColumns, setGridColumns] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setGridColumns(isMobile ? 1 : 3);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (university?.length) {
       const mappedFrames = university.map((uni: University, index: number) => {
-        const row = Math.floor(index / GRID_COLUMNS);
-        const col = index % GRID_COLUMNS;
+        const row = Math.floor(index / gridColumns);
+        const col = index % gridColumns;
         const x = col * CELL_SIZE_GRID_UNITS;
         const y = row * CELL_SIZE_GRID_UNITS;
 
@@ -59,7 +70,7 @@ export default function DynamicFrameLayout() {
       });
       setFrames(mappedFrames);
     }
-  }, [university]);
+  }, [university, gridColumns]);
 
   const handleFrameHover = (row: number, col: number, id: number) => {
     setHoveredFrame({ row, col, id });
@@ -76,21 +87,31 @@ export default function DynamicFrameLayout() {
   };
 
   const getGridTemplate = (type: "rows" | "columns") => {
-    if (!hoveredFrame) return "4fr 4fr 4fr";
+    if (!hoveredFrame) {
+      const size = `${CELL_SIZE_GRID_UNITS}fr`;
+      if (type === "columns") {
+        return Array.from({ length: gridColumns }, () => size).join(" ");
+      } else {
+        const totalRows = Math.ceil(frames.length / gridColumns);
+        return totalRows > 0
+          ? Array.from({ length: totalRows }, () => size).join(" ")
+          : "";
+      }
+    }
 
+    const totalTracks =
+      type === "rows" ? Math.ceil(frames.length / gridColumns) : gridColumns;
     const axis = type === "rows" ? hoveredFrame.row : hoveredFrame.col;
-    const nonHoveredSize = (12 - DEFAULT_HOVER_SIZE) / 2;
+    const nonHoveredSize = (12 - DEFAULT_HOVER_SIZE) / (totalTracks - 1);
 
-    return [0, 1, 2]
-      .map((position) =>
-        position === axis ? `${DEFAULT_HOVER_SIZE}fr` : `${nonHoveredSize}fr`
-      )
-      .join(" ");
+    return Array.from({ length: totalTracks }, (_, i) =>
+      i === axis ? `${DEFAULT_HOVER_SIZE}fr` : `${nonHoveredSize}fr`
+    ).join(" ");
   };
 
   const getTransformOrigin = (x: number, y: number) => {
-    const vertical = y === 0 ? "top" : y === 4 ? "center" : "bottom";
-    const horizontal = x === 0 ? "left" : x === 4 ? "center" : "right";
+    const vertical = y === 0 ? "top" : "bottom";
+    const horizontal = x === 0 ? "left" : "right";
     return `${vertical} ${horizontal}`;
   };
 
@@ -108,6 +129,8 @@ export default function DynamicFrameLayout() {
         style={{
           gridTemplateRows: getGridTemplate("rows"),
           gridTemplateColumns: getGridTemplate("columns"),
+          gridAutoRows: `${CELL_SIZE_GRID_UNITS}fr`,
+          gridAutoColumns: `${CELL_SIZE_GRID_UNITS}fr`,
           transition:
             "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
         }}
