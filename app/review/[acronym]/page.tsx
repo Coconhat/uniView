@@ -208,7 +208,9 @@ export default function Page({ params }: { params: { acronym: string } }) {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className={`font-medium text-white ${inter.className}`}>
+                    <h3
+                      className={`font-semibold text-white ${inter.className}`}
+                    >
                       {review.author_name}
                     </h3>
                   </div>
@@ -225,7 +227,9 @@ export default function Page({ params }: { params: { acronym: string } }) {
                     ))}
                   </div>
                 </div>
-                <p className="text-white/80">{review.comment}</p>
+                <h1 className={`text-white/80 font-medium ${inter.className}`}>
+                  {review.comment}
+                </h1>
                 <div className="flex items-center justify-between mt-4">
                   <div className="mt-4 text-sm text-white/50">
                     {new Date(review.created_at).toLocaleDateString()}
