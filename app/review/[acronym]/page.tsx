@@ -1,13 +1,13 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DLSU from "@/public/dlsu-logo.png";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Star, StarIcon, ChevronRight, Heart } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { inter, ppEditorialNewUltralightItalic } from "../fonts";
+import { inter, ppEditorialNewUltralightItalic } from "../../fonts";
 import {
   Dialog,
   DialogContent,
@@ -18,13 +18,48 @@ import {
 import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { set } from "date-fns";
+import { supabase } from "@/lib/supabase";
 
-export default function Page() {
+export default function Page({ params }: { params: { acronym: string } }) {
   const [headerSize] = useState(1.2);
   const [textSize] = useState(0.8);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
+  const [university, setUniversity] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUniversity = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("university")
+          .select("*")
+          .ilike("acronym", params.acronym) // Case-insensitive match
+          .maybeSingle(); // Tolerate empty results
+
+        if (error) throw error;
+        setUniversity(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUniversity();
+  }, [params.acronym]);
+
+  if (loading)
+    return <div className="text-white text-center p-8">Loading...</div>;
+  if (error)
+    return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!university)
+    return (
+      <div className="text-white text-center p-8">University not found</div>
+    );
 
   const handleOpenModal = () => setShowModal(true);
 
@@ -34,7 +69,7 @@ export default function Page() {
         {/* School Header */}
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 mb-12">
           <Image
-            src={DLSU}
+            src={university?.picture || DLSU}
             height={150}
             width={150}
             alt="De La Salle University"
@@ -44,13 +79,13 @@ export default function Page() {
             <h1
               className={`${inter.className} text-3xl font-medium text-white mb-2`}
             >
-              De La Salle University
+              {university.name}
             </h1>
             <p className={`text-lg text-white/70 mb-3 ${inter.className}`}>
-              Manila, Philippines
+              {university.location}
             </p>
             <Link
-              href="https://www.dlsu.edu.ph/"
+              href={university.website || "https://www.dlsu.edu.ph"}
               className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
               target="_blank"
             >

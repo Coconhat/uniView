@@ -49,6 +49,7 @@ export function FrameComponent({
         height,
         transition: "width 0.3s ease-in-out, height 0.3s ease-in-out",
       }}
+     
     >
       <div className="relative w-full h-full overflow-hidden">
         {/* Image with Border */}
