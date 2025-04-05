@@ -211,7 +211,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
                     <h3
                       className={`font-semibold text-white ${inter.className}`}
                     >
-                      {review.author_name}
+                      {review.author_name ? review.author_name : "Anonymous"}
                     </h3>
                   </div>
                   <div className="flex">
