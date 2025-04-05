@@ -34,7 +34,7 @@ export default function Home() {
             >
               <div className="space-y-6">
                 <div className="h-px bg-white/10 w-full" />
-                <p>
+                <p className="text-sm">
                   Choosing the right school is one of the biggest decisions
                   you’ll make—and we’re here to help!{" "}
                   <span style={{ textDecoration: "underline" }}>Uni View</span>{" "}
@@ -42,21 +42,10 @@ export default function Home() {
                   feedback about universities and colleges across the
                   Philippines.
                 </p>
-                <ul className="list-disc list-inside">
-                  <li>Looking for the best school for your dream course?</li>
-                  <li>
-                    Wondering if a university has good professors, strong job
-                    placement, or a fun campus life?
-                  </li>
-                  <li>
-                    Need warnings about slow admin, overcrowded classes, or
-                    hidden fees?
-                  </li>
-                </ul>
-                <p>
-                  We’ve got you covered! Browse our latest reviews, vote on your
-                  own experiences, and make smarter choices for your education.
-                </p>
+
+                <h3 className={`${inter.className} text-lg`}>
+                  Made by <span className="underline">Nhat Vu</span>
+                </h3>
                 <div className="h-px bg-white/10 w-full" />
               </div>
             </div>
