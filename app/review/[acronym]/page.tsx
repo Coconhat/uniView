@@ -322,14 +322,14 @@ export default function Page({ params }: { params: { acronym: string } }) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-[#3e3e3e] text-white hover:bg-[#2e2e2e]"
+                  className="border-[#3e3e3e] text-white hover:bg-[#2e2e2e] rounded-xl"
                   onClick={() => setShowModal(false)}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-white  text-black rounded-xl"
                   disabled={rating === 0}
                 >
                   Submit Review
