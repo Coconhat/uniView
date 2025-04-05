@@ -378,19 +378,24 @@ export default function DynamicFrameLayout() {
                 />
 
                 {/* Overlay with university name and "View Reviews" button  */}
-                <div
+                {/* <div
                   className={`z-50 absolute inset-0 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300 ${
                     isCurrentlyHovered ? " bg-opacity-60" : "opacity-0"
                   } group-hover:opacity-100  group-hover:bg-opacity-60`}
                 >
-                  <div className="text-center px-4  rounded-full py-2 ">
+                  <div className="text-center px-4 text-[#141414]  bg-white  rounded-full py-2 ">
                     <h3
-                      className={`text-[#141414]  bg-white rounded-xl  text-xl font-bold mb-2 py-1 px-2 ${inter.className} `}
+                      className={` rounded-xl  text-xl font-bold mb-2 py-1 px-2 ${inter.className} `}
                     >
                       {frame.name}
                     </h3>
+                    <h3
+                      className={` rounded-xl text-sm mb-4 ${inter.className}`}
+                    >
+                      Click to view reviews
+                    </h3>
                   </div>
-                </div>
+                </div> */}
               </div>
             </motion.div>
           );

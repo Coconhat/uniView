@@ -1,25 +1,26 @@
-import "./globals.css"
-import { ppEditorialNewUltralightItalic, inter } from "./fonts"
-import type React from "react"
+import "./globals.css";
+import { ppEditorialNewUltralightItalic, inter } from "./fonts";
+import type React from "react";
 
 export const metadata = {
-  title: "Dynamic Frame Layout",
-  description: "A dynamic frame layout with custom fonts",
-    generator: 'v0.dev'
-}
+  title: "Review University in the Philippines",
+  description: "Review University in the Philippines",
+  generator: "v0.dev",
+};
+
+export const dynamic = "force-static";
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${ppEditorialNewUltralightItalic.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${ppEditorialNewUltralightItalic.variable} ${inter.variable}`}
+    >
       <body className={inter.className}>{children}</body>
     </html>
-  )
+  );
 }
-
-
-
-import './globals.css'
