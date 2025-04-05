@@ -20,16 +20,20 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { set } from "date-fns";
 import { supabase } from "@/lib/supabase";
+import { Form } from "react-hook-form";
 
 export default function Page({ params }: { params: { acronym: string } }) {
   const [headerSize] = useState(1.2);
   const [textSize] = useState(0.8);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(0);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [university, setUniversity] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>(null);
+
+  const { acronym } = React.use(params);
 
   useEffect(() => {
     const fetchUniversity = async () => {
@@ -37,8 +41,8 @@ export default function Page({ params }: { params: { acronym: string } }) {
         const { data, error } = await supabase
           .from("university")
           .select("*")
-          .ilike("acronym", params.acronym) // Case-insensitive match
-          .maybeSingle(); // Tolerate empty results
+          .ilike("acronym", acronym)
+          .maybeSingle();
 
         if (error) throw error;
         setUniversity(data);
@@ -50,7 +54,28 @@ export default function Page({ params }: { params: { acronym: string } }) {
     };
 
     fetchUniversity();
-  }, [params.acronym]);
+  }, [acronym]);
+
+  // Fetch reviews - MOVED BEFORE CONDITIONAL RETURNS
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!university) return;
+      try {
+        const { data, error } = await supabase
+          .from("review")
+          .select("*")
+          .eq("university_id", university.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setReviews(data || []);
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      }
+    };
+
+    fetchReviews();
+  }, [university]);
 
   if (loading)
     return <div className="text-white text-center p-8">Loading...</div>;
@@ -61,6 +86,36 @@ export default function Page({ params }: { params: { acronym: string } }) {
       <div className="text-white text-center p-8">University not found</div>
     );
 
+  const handleReviewSubmit = async (formData: FormData) => {
+    if (!university) return;
+
+    try {
+      const { error } = await supabase.from("review").insert({
+        university_id: university.id,
+        author_name: formData.get("name"),
+        rating: rating,
+        comment: formData.get("comment"),
+      });
+
+      if (error) throw error;
+
+      const { data } = await supabase
+        .from("review")
+        .select("*")
+        .eq("university_id", university.id)
+        .order("created_at", { ascending: false });
+      setReviews(data || []);
+      setShowModal(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  //calculate average rating
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+      : 0;
   const handleOpenModal = () => setShowModal(true);
 
   return (
@@ -96,17 +151,19 @@ export default function Page({ params }: { params: { acronym: string } }) {
                 <StarIcon
                   key={star}
                   className={`h-5 w-5 ${
-                    star <= 4
+                    star <= Math.round(averageRating)
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-white/30"
                   }`}
                 />
               ))}
-              <span className="ml-2 text-white/70">4.2 (128 reviews)</span>
+              <span className="ml-2 text-white/70">
+                {" "}
+                {averageRating.toFixed(1)} ({reviews.length} reviews)
+              </span>
             </div>
           </div>
         </div>
-
         {/* Rating Card */}
         <Card
           className={`p-6 mb-12 bg-[#1e1e1e] border-[#2e2e2e] ${inter.className}`}
@@ -154,27 +211,26 @@ export default function Page({ params }: { params: { acronym: string } }) {
             </div>
           </div>
         </Card>
-
         {/* Reviews Section */}
         <div className={`mb-12 ${inter.className}`}>
           <div className="flex justify-between items-center mb-6">
             <h2
               className={`text-2xl font-semibold text-white ${inter.className}`}
             >
-              128 Reviews
+              {reviews.length} reviews
             </h2>
           </div>
 
           <div className="space-y-4">
-            {[1, 2].map((review) => (
+            {reviews.map((review) => (
               <Card
-                key={review}
+                key={review.id}
                 className="p-6 bg-[#1e1e1e] border-[#2e2e2e] hover:border-[#3e3e3e] transition-colors"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className={`font-medium text-white ${inter.className}`}>
-                      John Doe
+                      {review.author_name}
                     </h3>
                   </div>
                   <div className="flex">
@@ -182,7 +238,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
                       <StarIcon
                         key={star}
                         className={`h-4 w-4 ${
-                          star <= 4
+                          star <= Math.round(review.rating)
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-white/30"
                         }`}
@@ -190,12 +246,10 @@ export default function Page({ params }: { params: { acronym: string } }) {
                     ))}
                   </div>
                 </div>
-                <p className="text-white/80">
-                  {review === 1 ? "Great university." : "noob."}
-                </p>
+                <p className="text-white/80">{review.comment}</p>
                 <div className="flex items-center justify-between mt-4">
                   <div className="mt-4 text-sm text-white/50">
-                    Reviewed 2 months ago
+                    {new Date(review.created_at).toLocaleDateString()}
                   </div>
                   <Button>
                     <Heart />
@@ -205,13 +259,12 @@ export default function Page({ params }: { params: { acronym: string } }) {
             ))}
           </div>
         </div>
-
         {/* Review Modal */}
         <Dialog open={showModal} onOpenChange={setShowModal}>
           <DialogContent className="sm:max-w-[500px] bg-[#1e1e1e] border-[#2e2e2e]">
             <AlertDialogHeader>
               <DialogTitle
-                className={`text-xl font-semibold text-white ${inter.className}`}
+                className={`text-xl font-semibold text-white $interger{inter.className}`}
               >
                 Write Your Review
               </DialogTitle>
@@ -222,15 +275,10 @@ export default function Page({ params }: { params: { acronym: string } }) {
 
             <form
               className="space-y-6 mt-4"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const data = {
-                  name: formData.get("name") as string,
-                  message: formData.get("message") as string,
-                  rating: rating,
-                };
-                console.log("Review submitted:", data);
+                await handleReviewSubmit(formData);
                 setShowModal(false);
               }}
             >
@@ -247,12 +295,12 @@ export default function Page({ params }: { params: { acronym: string } }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message" className="text-white/80">
+                <Label htmlFor="comment" className="text-white/80">
                   Your Review
                 </Label>
                 <Textarea
-                  id="message"
-                  name="message"
+                  id="comment"
+                  name="comment"
                   placeholder="Share your experience..."
                   className="min-h-[150px] bg-[#2e2e2e] border-[#3e3e3e] text-white focus:border-blue-500"
                   required
