@@ -35,9 +35,33 @@ export default function Page({ params }: { params: { acronym: string } }) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [hoverRating, setHoverRating] = useState<number>(0);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+
   const { acronym } = React.use(params);
 
   const { university, loading, error } = useUniversities(acronym);
+
+  const fetchUniversityStats = async () => {
+    if (!university) return;
+    try {
+      const { count, data } = await supabase
+        .from("review")
+        .select("rating", { count: "exact" })
+        .eq("university_id", university.id);
+
+      const total = count || 0;
+      const avg = data.reduce((acc, curr) => acc + curr.rating, 0) / total || 0;
+      setAverageRating(avg);
+      setTotalReviews(total);
+      setTotalPages(Math.ceil(total / 25));
+    } catch (err) {
+      console.error("Error fetching university stats:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchReviews = async () => {
       if (!university) return;
@@ -46,7 +70,8 @@ export default function Page({ params }: { params: { acronym: string } }) {
           .from("review")
           .select("*")
           .eq("university_id", university.id)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: true })
+          .range((currentPage - 1) * 25, currentPage * 25 - 1);
 
         if (error) throw error;
         setReviews(data || []);
@@ -56,11 +81,11 @@ export default function Page({ params }: { params: { acronym: string } }) {
     };
 
     fetchReviews();
-  }, [university]);
+  }, [university, currentPage]);
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} />;
-  if (!university) return <NotFoundState />;
+  useEffect(() => {
+    fetchUniversityStats();
+  }, [university]);
 
   const handleReviewSubmit = async (formData: FormData) => {
     if (!university) return;
@@ -75,25 +100,20 @@ export default function Page({ params }: { params: { acronym: string } }) {
 
       if (error) throw error;
 
-      const { data } = await supabase
-        .from("review")
-        .select("*")
-        .eq("university_id", university.id)
-        .order("created_at", { ascending: false });
-      setReviews(data || []);
+      setCurrentPage(1);
+      await fetchUniversityStats();
       setShowModal(false);
     } catch (err) {
-      setError("failed to submit review");
+      console.error("Failed to submit review:", err);
     }
     setRating(0);
     setHoverRating(0);
   };
 
-  //calculate average rating
-  const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
-      : 0;
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  if (!university) return <NotFoundState />;
+
   const handleOpenModal = () => setShowModal(true);
 
   return (
@@ -242,6 +262,32 @@ export default function Page({ params }: { params: { acronym: string } }) {
             ))}
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="text-white border-gray-600 rounded-xl"
+            >
+              Previous
+            </Button>
+            <span className="text-white">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={currentPage === totalPages}
+              className="text-white border-gray-600 rounded-xl"
+            >
+              Next
+            </Button>
+          </div>
+        )}
+
         {/* Review Modal */}
         <Dialog open={showModal} onOpenChange={setShowModal}>
           <DialogContent className="sm:max-w-[500px] bg-[#1e1e1e] border-[#2e2e2e]">
