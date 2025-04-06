@@ -138,7 +138,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
               {university.location}
             </p>
             <Link
-              href={university.website}
+              href={university.website || "https://dlsl.edu.ph"}
               className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
               target="_blank"
             >
