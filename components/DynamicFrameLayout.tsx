@@ -199,12 +199,12 @@ export default function DynamicFrameLayout() {
                     defaultPos.x,
                     defaultPos.y
                   ),
-                  minHeight: "100px", // Minimum height for each frame to prevent collapsing
+                  minHeight: "150px",
                 }}
                 onMouseEnter={() => handleFrameHover(row, col, id)}
                 onMouseLeave={() => setHoveredFrame(null)}
                 onClick={() => handleFrameClick(acronym)}
-                whileHover={{ scale: 1.01 }}
+                whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2 }}
               >
                 <div className="relative flex-1 w-full h-full">
