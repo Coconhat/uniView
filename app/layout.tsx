@@ -5,7 +5,6 @@ import type React from "react";
 export const metadata = {
   title: "Review University in the Philippines",
   description: "Review University in the Philippines",
-  generator: "v0.dev",
 };
 
 export const dynamic = "force-static";

@@ -26,7 +26,7 @@ interface Frame {
 }
 
 const CELL_SIZE_GRID_UNITS = 4;
-const DEFAULT_HOVER_SIZE = 6;
+const DEFAULT_HOVER_SIZE = 3.5;
 
 export default function DynamicFrameLayout() {
   const router = useRouter();
@@ -112,6 +112,8 @@ export default function DynamicFrameLayout() {
     const totalTracks =
       type === "rows" ? Math.ceil(frames.length / gridColumns) : gridColumns;
     const axis = type === "rows" ? hoveredFrame.row : hoveredFrame.col;
+
+    // Make the hover expansion more subtle
     const nonHoveredSize = (12 - DEFAULT_HOVER_SIZE) / (totalTracks - 1);
 
     return Array.from({ length: totalTracks }, (_, i) =>
@@ -129,8 +131,13 @@ export default function DynamicFrameLayout() {
   if (error) return <ErrorState error={error} />;
   if (!allUniversities) return <NotFoundState />;
 
+  // Calculate minimum height to ensure proper scrolling
+  const totalRows = Math.ceil(frames.length / gridColumns);
+  const rowHeight = 200; // pixels per row (approximate)
+  const minGridHeight = totalRows * rowHeight;
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full overflow-auto">
       {isMobile ? (
         // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
@@ -140,7 +147,7 @@ export default function DynamicFrameLayout() {
             return (
               <div
                 key={id}
-                className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-hidden"
+                className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-y-auto"
                 onClick={() => handleFrameClick(acronym)}
               >
                 <div className="relative h-40 flex items-center justify-center p-4">
@@ -162,9 +169,9 @@ export default function DynamicFrameLayout() {
           })}
         </div>
       ) : (
-        // Desktop layout - original grid with hover effects
+        // Desktop layout - grid with hover effects + proper scrolling
         <div
-          className="relative w-full h-full grid gap-4"
+          className="relative w-full grid gap-4"
           style={{
             gridTemplateRows: getGridTemplate("rows"),
             gridTemplateColumns: getGridTemplate("columns"),
@@ -172,6 +179,8 @@ export default function DynamicFrameLayout() {
             gridAutoColumns: `${CELL_SIZE_GRID_UNITS}fr`,
             transition:
               "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
+            minHeight: `${minGridHeight}px`, // Ensure enough height for all items
+            height: "auto", // Allow natural height expansion
           }}
         >
           {frames.map((frame) => {
@@ -190,11 +199,12 @@ export default function DynamicFrameLayout() {
                     defaultPos.x,
                     defaultPos.y
                   ),
+                  minHeight: "100px", // Minimum height for each frame to prevent collapsing
                 }}
                 onMouseEnter={() => handleFrameHover(row, col, id)}
                 onMouseLeave={() => setHoveredFrame(null)}
                 onClick={() => handleFrameClick(acronym)}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
                 <div className="relative flex-1 w-full h-full">
