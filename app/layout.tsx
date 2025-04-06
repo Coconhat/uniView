@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ppEditorialNewUltralightItalic, inter } from "./fonts";
 import type React from "react";
+import { QueryProvider } from "@/hooks/use-universities";
 
 export const metadata = {
   title: "Review University in the Philippines",
@@ -19,7 +20,9 @@ export default function RootLayout({
       lang="en"
       className={`${ppEditorialNewUltralightItalic.variable} ${inter.variable}`}
     >
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }
