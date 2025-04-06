@@ -40,3 +40,15 @@
     font-weight: 300;
   }
 }
+::selection {
+  background: #84e7b5;
+  color: #333333;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Fallback for Firefox */
+::-moz-selection {
+  background: #84e7b5;
+  color: #333333;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
