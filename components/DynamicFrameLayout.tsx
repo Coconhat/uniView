@@ -123,12 +123,6 @@ export default function DynamicFrameLayout() {
     [isMobile]
   );
 
-  const getTransformOrigin = (x: number, y: number) => {
-    const vertical = y === 0 ? "top" : "bottom";
-    const horizontal = x === 0 ? "left" : "right";
-    return `${vertical} ${horizontal}`;
-  };
-
   if (loading) return <LoadingState />;
   if (error) return <ErrorState error={error} />;
   if (!allUniversities) return <NotFoundState />;
