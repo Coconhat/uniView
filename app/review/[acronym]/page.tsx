@@ -121,7 +121,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
         {/* School Header */}
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 mb-12">
           <Image
-            src={university?.picture || DLSU}
+            src={university?.picture}
             height={150}
             width={150}
             priority
@@ -138,7 +138,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
               {university.location}
             </p>
             <Link
-              href={university.website || "https://www.dlsu.edu.ph"}
+              href={university.website}
               className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
               target="_blank"
             >
