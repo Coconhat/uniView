@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { set } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Form } from "react-hook-form";
-import { useFetchUniversity } from "@/hooks/use-fetch-uni";
 import LoadingState from "@/components/loading-state";
 import ErrorState from "@/components/error-state";
 import NotFoundState from "@/components/not-found-state";

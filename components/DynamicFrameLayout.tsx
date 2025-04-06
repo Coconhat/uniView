@@ -8,6 +8,7 @@ import LoadingState from "./loading-state";
 import ErrorState from "./error-state";
 import NotFoundState from "./not-found-state";
 import Image from "next/image";
+import Link from "next/link";
 
 interface University {
   id: number;
@@ -31,7 +32,6 @@ const DEFAULT_SIZE = 3.5; // Base size for non-hovered items
 const MIN_SIZE = 2.5; // Minimum size for other items in active row/col
 
 export default function DynamicFrameLayout() {
-  const router = useRouter();
   const { allUniversities, loading, error } = useUniversities();
   const [frames, setFrames] = useState<Frame[]>([]);
   const [hoveredFrame, setHoveredFrame] = useState<{
@@ -82,12 +82,6 @@ export default function DynamicFrameLayout() {
     }
   }, [allUniversities, gridColumns]);
 
-  const handleFrameClick = useCallback(
-    (acronym: string) => {
-      router.push(`/review/${acronym}`);
-    },
-    [router]
-  );
   const getGridTemplate = (type: "rows" | "columns") => {
     if (!hoveredFrame || isMobile) {
       const size = `${CELL_SIZE_GRID_UNITS}fr`;
@@ -156,7 +150,6 @@ export default function DynamicFrameLayout() {
               <div
                 key={id}
                 className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-y-auto"
-                onClick={() => handleFrameClick(acronym)}
               >
                 <div className="relative h-40 flex items-center justify-center p-4">
                   {/* Image container with fixed dimensions */}
@@ -204,20 +197,21 @@ export default function DynamicFrameLayout() {
                 }`}
                 onMouseEnter={() => handleFrameHover(row, col, id)}
                 onMouseLeave={() => setHoveredFrame(null)}
-                onClick={() => handleFrameClick(acronym)}
                 layout // Enable layout animations
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative flex-1 w-full h-full">
-                  <FrameComponent
-                    image={image}
-                    width="100%"
-                    height="100%"
-                    className="flex-1 transition-transform duration-300"
-                    label={name}
-                    isHovered={isHovered}
-                    showFrame={isHovered}
-                  />
+                  <Link key={id} href={`/review/${acronym}`} prefetch={true}>
+                    <FrameComponent
+                      image={image}
+                      width="100%"
+                      height="100%"
+                      className="flex-1 transition-transform duration-300"
+                      label={name}
+                      isHovered={isHovered}
+                      showFrame={isHovered}
+                    />
+                  </Link>
                 </div>
                 <motion.p
                   className="text-center p-2 text-sm font-medium"

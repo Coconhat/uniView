@@ -43,7 +43,7 @@ export const useUniversities = (acronym?: string) => {
         } else {
           const { data: allData, error: allError } = await supabase
             .from("university")
-            .select("id, acronym, name, picture, rating")
+            .select("id, acronym, name, picture")
             .order("name", { ascending: true });
 
           if (allError) throw allError;
