@@ -26,7 +26,9 @@ interface Frame {
 }
 
 const CELL_SIZE_GRID_UNITS = 4;
-const DEFAULT_HOVER_SIZE = 3.5;
+const DEFAULT_HOVER_SIZE = 5; // Size of the hovered item
+const DEFAULT_SIZE = 3.5; // Base size for non-hovered items
+const MIN_SIZE = 2.5; // Minimum size for other items in active row/col
 
 export default function DynamicFrameLayout() {
   const router = useRouter();
@@ -80,6 +82,36 @@ export default function DynamicFrameLayout() {
     }
   }, [allUniversities, gridColumns]);
 
+  const handleFrameClick = (acronym: string) => {
+    router.push(`/review/${acronym}`);
+  };
+
+  const getGridTemplate = (type: "rows" | "columns") => {
+    if (!hoveredFrame || isMobile) {
+      const size = `${CELL_SIZE_GRID_UNITS}fr`;
+      return type === "columns"
+        ? Array(gridColumns).fill(size).join(" ")
+        : Array(Math.ceil(frames.length / gridColumns))
+            .fill(size)
+            .join(" ");
+    }
+
+    const totalTracks =
+      type === "rows" ? Math.ceil(frames.length / gridColumns) : gridColumns;
+
+    const activeTrack = type === "rows" ? hoveredFrame.row : hoveredFrame.col;
+
+    return Array.from({ length: totalTracks }, (_, i) => {
+      if (i === activeTrack) return `${DEFAULT_HOVER_SIZE}fr`;
+      // Apply minimum size to prevent excessive shrinking
+      return `${Math.max(
+        MIN_SIZE,
+        DEFAULT_SIZE - Math.abs(i - activeTrack) * 0.7
+      )}fr`;
+    }).join(" ");
+  };
+
+  // Add debounced hover handler
   const handleFrameHover = (row: number, col: number, id: number) => {
     if (!isMobile) {
       setHoveredFrame({ row, col, id });
@@ -90,35 +122,6 @@ export default function DynamicFrameLayout() {
         }))
       );
     }
-  };
-
-  const handleFrameClick = (acronym: string) => {
-    router.push(`/review/${acronym}`);
-  };
-
-  const getGridTemplate = (type: "rows" | "columns") => {
-    if (!hoveredFrame || isMobile) {
-      const size = `${CELL_SIZE_GRID_UNITS}fr`;
-      if (type === "columns") {
-        return Array.from({ length: gridColumns }, () => size).join(" ");
-      } else {
-        const totalRows = Math.ceil(frames.length / gridColumns);
-        return totalRows > 0
-          ? Array.from({ length: totalRows }, () => size).join(" ")
-          : "";
-      }
-    }
-
-    const totalTracks =
-      type === "rows" ? Math.ceil(frames.length / gridColumns) : gridColumns;
-    const axis = type === "rows" ? hoveredFrame.row : hoveredFrame.col;
-
-    // Make the hover expansion more subtle
-    const nonHoveredSize = (12 - DEFAULT_HOVER_SIZE) / (totalTracks - 1);
-
-    return Array.from({ length: totalTracks }, (_, i) =>
-      i === axis ? `${DEFAULT_HOVER_SIZE}fr` : `${nonHoveredSize}fr`
-    ).join(" ");
   };
 
   const getTransformOrigin = (x: number, y: number) => {
@@ -133,11 +136,11 @@ export default function DynamicFrameLayout() {
 
   // Calculate minimum height to ensure proper scrolling
   const totalRows = Math.ceil(frames.length / gridColumns);
-  const rowHeight = 200; // pixels per row (approximate)
+  const rowHeight = 250; // pixels per row (approximate)
   const minGridHeight = totalRows * rowHeight;
 
   return (
-    <div className="w-full h-full overflow-auto">
+    <div className="w-full h-full overflow-x-hidden">
       {isMobile ? (
         // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
@@ -173,16 +176,14 @@ export default function DynamicFrameLayout() {
       ) : (
         // Desktop layout - grid with hover effects + proper scrolling
         <div
-          className="relative w-full grid gap-4"
+          className="relative w-full grid gap-3" // Reduced gap for stability
           style={{
             gridTemplateRows: getGridTemplate("rows"),
             gridTemplateColumns: getGridTemplate("columns"),
-            gridAutoRows: `${CELL_SIZE_GRID_UNITS}fr`,
-            gridAutoColumns: `${CELL_SIZE_GRID_UNITS}fr`,
             transition:
-              "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
-            minHeight: `${minGridHeight}px`, // Ensure enough height for all items
-            height: "auto", // Allow natural height expansion
+              "grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1), " +
+              "grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            minHeight: `${minGridHeight}px`,
           }}
         >
           {frames.map((frame) => {
@@ -194,33 +195,31 @@ export default function DynamicFrameLayout() {
               <motion.div
                 key={id}
                 className={`relative flex flex-col cursor-pointer group overflow-hidden rounded-lg ${
-                  isHovered ? "z-10" : ""
+                  isHovered ? "z-20" : "z-10"
                 }`}
-                style={{
-                  transformOrigin: getTransformOrigin(
-                    defaultPos.x,
-                    defaultPos.y
-                  ),
-                  minHeight: "150px",
-                }}
                 onMouseEnter={() => handleFrameHover(row, col, id)}
                 onMouseLeave={() => setHoveredFrame(null)}
                 onClick={() => handleFrameClick(acronym)}
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.2 }}
+                layout // Enable layout animations
+                transition={{ duration: 0.3 }}
               >
                 <div className="relative flex-1 w-full h-full">
                   <FrameComponent
                     image={image}
                     width="100%"
                     height="100%"
-                    className="flex-1"
+                    className="flex-1 transition-transform duration-300"
                     label={name}
                     isHovered={isHovered}
                     showFrame={isHovered}
                   />
                 </div>
-                <p className="text-center p-2 text-sm font-medium">{name}</p>
+                <motion.p
+                  className="text-center p-2 text-sm font-medium"
+                  animate={{ opacity: isHovered ? 1 : 0.8 }}
+                >
+                  {name}
+                </motion.p>
               </motion.div>
             );
           })}
