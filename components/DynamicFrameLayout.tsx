@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
 import { useRouter } from "next/navigation";
@@ -82,10 +82,12 @@ export default function DynamicFrameLayout() {
     }
   }, [allUniversities, gridColumns]);
 
-  const handleFrameClick = (acronym: string) => {
-    router.push(`/review/${acronym}`);
-  };
-
+  const handleFrameClick = useCallback(
+    (acronym: string) => {
+      router.push(`/review/${acronym}`);
+    },
+    [router]
+  );
   const getGridTemplate = (type: "rows" | "columns") => {
     if (!hoveredFrame || isMobile) {
       const size = `${CELL_SIZE_GRID_UNITS}fr`;
@@ -112,17 +114,20 @@ export default function DynamicFrameLayout() {
   };
 
   // Add debounced hover handler
-  const handleFrameHover = (row: number, col: number, id: number) => {
-    if (!isMobile) {
-      setHoveredFrame({ row, col, id });
-      setFrames((frames) =>
-        frames.map((frame) => ({
-          ...frame,
-          isHovered: frame.id === id,
-        }))
-      );
-    }
-  };
+  const handleFrameHover = useCallback(
+    (row: number, col: number, id: number) => {
+      if (!isMobile) {
+        setHoveredFrame({ row, col, id });
+        setFrames((frames) =>
+          frames.map((frame) => ({
+            ...frame,
+            isHovered: frame.id === id,
+          }))
+        );
+      }
+    },
+    [isMobile]
+  );
 
   const getTransformOrigin = (x: number, y: number) => {
     const vertical = y === 0 ? "top" : "bottom";
