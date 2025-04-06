@@ -249,11 +249,11 @@ export default function Page({ params }: { params: { acronym: string } }) {
               <DialogTitle
                 className={`text-xl font-semibold text-white ${inter.className}`}
               >
-                <h1
+                <p
                   className={`${inter.className} text-xl font-semibold text-white`}
                 >
                   Write Your Review
-                </h1>
+                </p>
               </DialogTitle>
               <DialogDescription className="text-white/70">
                 Share your honest experience to help other students
