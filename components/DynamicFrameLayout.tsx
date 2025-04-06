@@ -7,6 +7,7 @@ import { useUniversities } from "@/hooks/use-universities";
 import LoadingState from "./loading-state";
 import ErrorState from "./error-state";
 import NotFoundState from "./not-found-state";
+import Image from "next/image";
 
 interface University {
   id: number;
@@ -145,7 +146,7 @@ export default function DynamicFrameLayout() {
                 <div className="relative h-40 flex items-center justify-center p-4">
                   {/* Image container with fixed dimensions */}
                   <div className="relative w-full h-full max-h-32 flex items-center justify-center">
-                    <img
+                    <Image
                       src={image}
                       alt={`${name} logo`}
                       className="max-w-full max-h-full object-contain"

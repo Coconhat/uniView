@@ -105,6 +105,8 @@ export default function Page({ params }: { params: { acronym: string } }) {
             src={university?.picture || DLSU}
             height={150}
             width={150}
+            priority
+            placeholder="blur"
             alt="De La Salle University"
             className="rounded-lg object-cover"
           />
