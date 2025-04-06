@@ -5,6 +5,7 @@ import DynamicFrameLayout from "../components/DynamicFrameLayout";
 import { ppEditorialNewUltralightItalic, inter } from "./fonts";
 import Image from "next/image";
 import Link from "next/link";
+import SuggestionBox from "@/components/suggestion-box";
 
 export default function Home() {
   const [headerSize] = useState(1.2);
@@ -48,6 +49,11 @@ export default function Home() {
                     <span className="underline">Nhat Vu</span>
                   </Link>
                 </h3>
+                <h3 className={`${inter.className} text-sm `}>
+                  <SuggestionBox />
+                  <br />
+                </h3>
+
                 <div className="h-px bg-white/10 w-full" />
               </div>
             </div>
