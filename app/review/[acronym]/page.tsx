@@ -35,7 +35,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
   const [hoverRating, setHoverRating] = useState<number>(0);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
 
