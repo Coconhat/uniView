@@ -106,7 +106,6 @@ export default function Page({ params }: { params: { acronym: string } }) {
             height={150}
             width={150}
             priority
-            placeholder="blur"
             alt="De La Salle University"
             className="rounded-lg object-cover"
           />

@@ -35,7 +35,7 @@ export const useUniversities = (acronym?: string) => {
           const { data: singleData, error: singleError } = await supabase
             .from("university")
             .select("*")
-            .ilike("acronym", acronym)
+            .eq("acronym", acronym.toUpperCase())
             .maybeSingle();
 
           if (singleError) throw singleError;
