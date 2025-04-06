@@ -154,6 +154,8 @@ export default function DynamicFrameLayout() {
                   {/* Image container with fixed dimensions */}
                   <div className="relative w-full h-full max-h-32 flex items-center justify-center">
                     <Image
+                      width={150}
+                      height={150}
                       src={image}
                       alt={`${name} logo`}
                       className="max-w-full max-h-full object-contain"
