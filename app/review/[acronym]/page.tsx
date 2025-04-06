@@ -25,6 +25,7 @@ import { useFetchUniversity } from "@/hooks/use-fetch-uni";
 import LoadingState from "@/components/loading-state";
 import ErrorState from "@/components/error-state";
 import NotFoundState from "@/components/not-found-state";
+import { useUniversities } from "@/hooks/use-universities";
 
 export default function Page({ params }: { params: { acronym: string } }) {
   const [headerSize] = useState(1.2);
@@ -36,7 +37,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
 
   const { acronym } = React.use(params);
 
-  const { university, loading, error } = useFetchUniversity(acronym);
+  const { university, loading, error } = useUniversities(acronym);
   useEffect(() => {
     const fetchReviews = async () => {
       if (!university) return;

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
 import { useRouter } from "next/navigation";
-import { useFetchAllUniversity } from "@/hooks/use-fetch-all-universities";
+import { useUniversities } from "@/hooks/use-universities";
 import LoadingState from "./loading-state";
 import ErrorState from "./error-state";
 import NotFoundState from "./not-found-state";
@@ -29,7 +29,7 @@ const DEFAULT_HOVER_SIZE = 6;
 
 export default function DynamicFrameLayout() {
   const router = useRouter();
-  const { university, loading, error } = useFetchAllUniversity();
+  const { allUniversities, loading, error } = useUniversities();
   const [frames, setFrames] = useState<Frame[]>([]);
   const [hoveredFrame, setHoveredFrame] = useState<{
     row: number;
@@ -52,30 +52,32 @@ export default function DynamicFrameLayout() {
   }, []);
 
   useEffect(() => {
-    if (university?.length) {
-      const mappedFrames = university.map((uni: University, index: number) => {
-        const row = Math.floor(index / gridColumns);
-        const col = index % gridColumns;
-        const x = col * CELL_SIZE_GRID_UNITS;
-        const y = row * CELL_SIZE_GRID_UNITS;
+    if (allUniversities?.length) {
+      const mappedFrames = allUniversities.map(
+        (uni: University, index: number) => {
+          const row = Math.floor(index / gridColumns);
+          const col = index % gridColumns;
+          const x = col * CELL_SIZE_GRID_UNITS;
+          const y = row * CELL_SIZE_GRID_UNITS;
 
-        return {
-          id: uni.id,
-          image: uni.picture,
-          acronym: uni.acronym,
-          name: uni.name,
-          defaultPos: {
-            x,
-            y,
-            w: CELL_SIZE_GRID_UNITS,
-            h: CELL_SIZE_GRID_UNITS,
-          },
-          isHovered: false,
-        };
-      });
+          return {
+            id: uni.id,
+            image: uni.picture,
+            acronym: uni.acronym,
+            name: uni.name,
+            defaultPos: {
+              x,
+              y,
+              w: CELL_SIZE_GRID_UNITS,
+              h: CELL_SIZE_GRID_UNITS,
+            },
+            isHovered: false,
+          };
+        }
+      );
       setFrames(mappedFrames);
     }
-  }, [university, gridColumns]);
+  }, [allUniversities, gridColumns]);
 
   const handleFrameHover = (row: number, col: number, id: number) => {
     if (!isMobile) {
@@ -124,7 +126,7 @@ export default function DynamicFrameLayout() {
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState error={error} />;
-  if (!university) return <NotFoundState />;
+  if (!allUniversities) return <NotFoundState />;
 
   return (
     <div className="w-full h-full">

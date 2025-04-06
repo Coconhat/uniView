@@ -86,7 +86,9 @@ export default function SuggestionBox() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <p className={`mt-1 ${inter.className} cursor-pointer font-medium`}>
+        <p
+          className={`mt-1 ${inter.className} cursor-pointer underline font-medium`}
+        >
           Add Your School
         </p>
       </DialogTrigger>
