@@ -154,14 +154,16 @@ export default function DynamicFrameLayout() {
                 <div className="relative h-40 flex items-center justify-center p-4">
                   {/* Image container with fixed dimensions */}
                   <div className="relative w-full h-full max-h-32 flex items-center justify-center">
-                    <Image
-                      width={150}
-                      height={150}
-                      src={image}
-                      alt={`${name} logo`}
-                      className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: "150px" }}
-                    />
+                    <Link key={id} href={`/review/${acronym}`} prefetch={true}>
+                      <Image
+                        width={150}
+                        height={150}
+                        src={image}
+                        alt={`${name} logo`}
+                        className="max-w-full max-h-full object-contain"
+                        style={{ maxHeight: "150px" }}
+                      />
+                    </Link>
                   </div>
                 </div>
                 <div className="p-4 text-center ">
