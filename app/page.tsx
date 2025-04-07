@@ -6,6 +6,7 @@ import { ppEditorialNewUltralightItalic, inter } from "./fonts";
 import Image from "next/image";
 import Link from "next/link";
 import SuggestionBox from "@/components/suggestion-box";
+import { LinkPreview } from "@/components/ui/link-preview";
 
 export default function Home() {
   const [headerSize] = useState(1.2);
@@ -45,9 +46,9 @@ export default function Home() {
 
                 <h3 className={`${inter.className} text-sm `}>
                   Made with <span>&lt;3</span> by{" "}
-                  <Link href="https://nhatvu.life/">
-                    <span className="underline">Nhat Vu</span>
-                  </Link>
+                  <LinkPreview url="https://nhatvu.life/">
+                    <span className="underline text-white/80">Nhat Vu</span>
+                  </LinkPreview>
                 </h3>
                 <h3 className={`${inter.className} text-sm `}>
                   <SuggestionBox />

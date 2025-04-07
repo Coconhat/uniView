@@ -15,7 +15,7 @@
         "@radix-ui/react-context-menu": "^2.2.4",
         "@radix-ui/react-dialog": "^1.1.4",
         "@radix-ui/react-dropdown-menu": "^2.1.4",
-        "@radix-ui/react-hover-card": "^1.1.4",
+        "@radix-ui/react-hover-card": "^1.1.6",
         "@radix-ui/react-label": "^2.1.1",
         "@radix-ui/react-menubar": "^1.1.4",
         "@radix-ui/react-navigation-menu": "^1.2.3",
@@ -48,6 +48,7 @@
         "motion": "^12.6.3",
         "next": "15.2.4",
         "next-themes": "^0.4.4",
+        "qss": "^3.0.0",
         "react": "^19",
         "react-day-picker": "8.10.1",
         "react-dom": "^19",
@@ -562,6 +563,8 @@
     "postcss-value-parser": ["postcss-value-parser@4.2.0", "", {}, "sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ=="],
 
     "prop-types": ["prop-types@15.8.1", "", { "dependencies": { "loose-envify": "^1.4.0", "object-assign": "^4.1.1", "react-is": "^16.13.1" } }, "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg=="],
+
+    "qss": ["qss@3.0.0", "", {}, "sha512-ZHoCB3M/3Voev64zhLLUOKDtaEdJ/lymsJJ7R3KBusVZ2ovNiIB7XOq3Xh6V1a8O+Vho+g2B5YElq9zW7D8aQw=="],
 
     "queue-microtask": ["queue-microtask@1.2.3", "", {}, "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A=="],
 

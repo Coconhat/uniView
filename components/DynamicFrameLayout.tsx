@@ -84,6 +84,14 @@ export default function DynamicFrameLayout() {
     }
   }, [allUniversities, gridColumns]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
+  };
+  const onInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("submitted");
+  };
+
   const getGridTemplate = (type: "rows" | "columns") => {
     if (!hoveredFrame || isMobile) {
       const size = `${CELL_SIZE_GRID_UNITS}fr`;
