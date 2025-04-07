@@ -46,6 +46,13 @@ export default function DynamicFrameLayout() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -68,9 +75,17 @@ export default function DynamicFrameLayout() {
     );
   }, [allUniversities, searchQuery]);
 
+  // important::
   useEffect(() => {
     if (allUniversities?.length) {
-      const mappedFrames = filteredUniversities.map(
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedUniversities = filteredUniversities.slice(
+        startIndex,
+        endIndex
+      ); // this will be the new mappedframes
+
+      const mappedFrames = paginatedUniversities.map(
         (uni: University, index: number) => {
           const row = Math.floor(index / gridColumns);
           const col = index % gridColumns;
@@ -94,7 +109,7 @@ export default function DynamicFrameLayout() {
       );
       setFrames(mappedFrames);
     }
-  }, [filteredUniversities, gridColumns]);
+  }, [filteredUniversities, gridColumns, currentPage]);
 
   const onInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -158,6 +173,7 @@ export default function DynamicFrameLayout() {
         onChange={(e) => setSearchQuery(e.target.value)}
         onSubmit={onInputSubmit}
       />
+
       {isMobile ? (
         // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
@@ -242,6 +258,39 @@ export default function DynamicFrameLayout() {
               </motion.div>
             );
           })}
+        </div>
+      )}
+      {/* Pagination controls */}
+      {filteredUniversities.length > 0 && (
+        <div className="w-full flex justify-center items-center gap-4 py-6">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-5 py-2 bg-white rounded-2xl disabled:opacity-50  transition-colors text-black "
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of{" "}
+            {Math.ceil(filteredUniversities.length / itemsPerPage)}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((p) =>
+                Math.min(
+                  Math.ceil(filteredUniversities.length / itemsPerPage),
+                  p + 1
+                )
+              )
+            }
+            disabled={
+              currentPage ===
+              Math.ceil(filteredUniversities.length / itemsPerPage)
+            }
+            className="px-5 py-2 bg-white disabled:opacity-50 text-black transition-colors rounded-2xl"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
