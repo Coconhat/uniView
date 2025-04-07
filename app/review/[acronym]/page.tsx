@@ -209,6 +209,7 @@ export default function Page({ params }: { params: { acronym: string } }) {
             </div>
           </div>
         </Card>
+
         {/* Reviews Section */}
         <div className={`mb-12 ${inter.className}`}>
           <div className="flex justify-between items-center mb-6">
@@ -218,6 +219,12 @@ export default function Page({ params }: { params: { acronym: string } }) {
               {reviews.length} reviews
             </h2>
           </div>
+
+          {reviews.length === 0 && (
+            <div className="text-center text-white/70">
+              No reviews yet. Be the first to share your experience!
+            </div>
+          )}
 
           <div className="space-y-4">
             {reviews.map((review) => (

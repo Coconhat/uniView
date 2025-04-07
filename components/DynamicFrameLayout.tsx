@@ -9,6 +9,8 @@ import ErrorState from "./error-state";
 import NotFoundState from "./not-found-state";
 import Image from "next/image";
 import Link from "next/link";
+import { Input } from "./ui/input";
+import { SearchInput } from "./search-bar";
 
 interface University {
   id: number;
@@ -134,6 +136,7 @@ export default function DynamicFrameLayout() {
 
   return (
     <div className="w-full h-full overflow-x-hidden">
+      <SearchInput />
       {isMobile ? (
         // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
