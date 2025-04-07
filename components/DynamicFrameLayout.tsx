@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
 import { useRouter } from "next/navigation";
@@ -44,6 +44,8 @@ export default function DynamicFrameLayout() {
   const [gridColumns, setGridColumns] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -56,9 +58,19 @@ export default function DynamicFrameLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const filteredUniversities = useMemo(() => {
+    if (!allUniversities) return [];
+    const query = searchQuery.toLowerCase();
+    return allUniversities.filter(
+      (uni: any) =>
+        uni.name.toLowerCase().includes(query) ||
+        uni.acronym.toLowerCase().includes(query)
+    );
+  }, [allUniversities, searchQuery]);
+
   useEffect(() => {
     if (allUniversities?.length) {
-      const mappedFrames = allUniversities.map(
+      const mappedFrames = filteredUniversities.map(
         (uni: University, index: number) => {
           const row = Math.floor(index / gridColumns);
           const col = index % gridColumns;
@@ -82,11 +94,8 @@ export default function DynamicFrameLayout() {
       );
       setFrames(mappedFrames);
     }
-  }, [allUniversities, gridColumns]);
+  }, [filteredUniversities, gridColumns]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
-  };
   const onInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("submitted");
@@ -144,7 +153,11 @@ export default function DynamicFrameLayout() {
 
   return (
     <div className="w-full h-full overflow-x-hidden">
-      <SearchInput />
+      <SearchInput
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onSubmit={onInputSubmit}
+      />
       {isMobile ? (
         // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
