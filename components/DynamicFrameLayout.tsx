@@ -2,14 +2,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FrameComponent } from "./FrameComponent";
-import { useRouter } from "next/navigation";
 import { useUniversities } from "@/hooks/use-universities";
 import LoadingState from "./loading-state";
 import ErrorState from "./error-state";
 import NotFoundState from "./not-found-state";
 import Image from "next/image";
 import Link from "next/link";
-import { Input } from "./ui/input";
 import { SearchInput } from "./search-bar";
 
 interface University {
@@ -29,25 +27,17 @@ interface Frame {
 }
 
 const CELL_SIZE_GRID_UNITS = 4;
-const DEFAULT_HOVER_SIZE = 5; // Size of the hovered item
-const DEFAULT_SIZE = 3.5; // Base size for non-hovered items
-const MIN_SIZE = 2.5; // Minimum size for other items in active row/col
+const HOVER_SCALE_FACTOR = 1.15;
+const ITEMS_PER_PAGE = 30;
 
 export default function DynamicFrameLayout() {
   const { allUniversities, loading, error } = useUniversities();
   const [frames, setFrames] = useState<Frame[]>([]);
-  const [hoveredFrame, setHoveredFrame] = useState<{
-    row: number;
-    col: number;
-    id: number;
-  } | null>(null);
+  const [hoveredFrameId, setHoveredFrameId] = useState<number | null>(null);
   const [gridColumns, setGridColumns] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -67,26 +57,26 @@ export default function DynamicFrameLayout() {
 
   const filteredUniversities = useMemo(() => {
     if (!allUniversities) return [];
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return allUniversities;
     return allUniversities.filter(
-      (uni: any) =>
+      (uni: University) =>
         uni.name.toLowerCase().includes(query) ||
         uni.acronym.toLowerCase().includes(query)
     );
   }, [allUniversities, searchQuery]);
 
-  // important::
   useEffect(() => {
-    if (allUniversities?.length) {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
+    if (filteredUniversities.length) {
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
       const paginatedUniversities = filteredUniversities.slice(
         startIndex,
         endIndex
-      ); // this will be the new mappedframes
+      );
 
       const mappedFrames = paginatedUniversities.map(
-        (uni: University, index: number) => {
+        (uni: University, index: number): Frame => {
           const row = Math.floor(index / gridColumns);
           const col = index % gridColumns;
           const x = col * CELL_SIZE_GRID_UNITS;
@@ -103,55 +93,33 @@ export default function DynamicFrameLayout() {
               w: CELL_SIZE_GRID_UNITS,
               h: CELL_SIZE_GRID_UNITS,
             },
-            isHovered: false,
+            isHovered: uni.id === hoveredFrameId,
           };
         }
       );
       setFrames(mappedFrames);
+
+      // Check if hovered item is still in the current page
+      if (
+        hoveredFrameId &&
+        !paginatedUniversities.some((uni: any) => uni.id === hoveredFrameId)
+      ) {
+        setHoveredFrameId(null);
+      }
+    } else {
+      setFrames([]);
     }
-  }, [filteredUniversities, gridColumns, currentPage]);
+  }, [filteredUniversities, gridColumns, currentPage, hoveredFrameId]);
 
   const onInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submitted");
+    console.log("Search submitted (optional action)");
   };
 
-  const getGridTemplate = (type: "rows" | "columns") => {
-    if (!hoveredFrame || isMobile) {
-      const size = `${CELL_SIZE_GRID_UNITS}fr`;
-      return type === "columns"
-        ? Array(gridColumns).fill(size).join(" ")
-        : Array(Math.ceil(frames.length / gridColumns))
-            .fill(size)
-            .join(" ");
-    }
-
-    const totalTracks =
-      type === "rows" ? Math.ceil(frames.length / gridColumns) : gridColumns;
-
-    const activeTrack = type === "rows" ? hoveredFrame.row : hoveredFrame.col;
-
-    return Array.from({ length: totalTracks }, (_, i) => {
-      if (i === activeTrack) return `${DEFAULT_HOVER_SIZE}fr`;
-      // Apply minimum size to prevent excessive shrinking
-      return `${Math.max(
-        MIN_SIZE,
-        DEFAULT_SIZE - Math.abs(i - activeTrack) * 0.7
-      )}fr`;
-    }).join(" ");
-  };
-
-  // Add debounced hover handler
   const handleFrameHover = useCallback(
-    (row: number, col: number, id: number) => {
+    (id: number | null) => {
       if (!isMobile) {
-        setHoveredFrame({ row, col, id });
-        setFrames((frames) =>
-          frames.map((frame) => ({
-            ...frame,
-            isHovered: frame.id === id,
-          }))
-        );
+        setHoveredFrameId(id);
       }
     },
     [isMobile]
@@ -159,135 +127,156 @@ export default function DynamicFrameLayout() {
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState error={error} />;
-  if (!allUniversities) return <NotFoundState />;
+  if (!allUniversities && !loading) return <NotFoundState />;
 
-  // Calculate minimum height to ensure proper scrolling
-  const totalRows = Math.ceil(frames.length / gridColumns);
-  const rowHeight = 250; // pixels per row (approximate)
-  const minGridHeight = totalRows * rowHeight;
+  const totalPages = Math.ceil(filteredUniversities.length / ITEMS_PER_PAGE);
+  const totalGridRows = Math.ceil(frames.length / gridColumns);
+  const approxRowHeight = 200;
+  const minGridHeight = totalGridRows * approxRowHeight;
 
   return (
-    <div className="w-full h-full overflow-x-hidden">
+    <div className="w-full h-full overflow-x-hidden px-4 md:px-6 lg:px-8">
       <SearchInput
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onSubmit={onInputSubmit}
+        className="mb-6 sticky top-0 z-30 bg-background py-4"
       />
-
+      {!loading &&
+        !error &&
+        filteredUniversities.length === 0 &&
+        searchQuery && <NotFoundState />}
       {isMobile ? (
-        // Mobile layout
         <div className="flex flex-col gap-6 w-full pb-8">
           {frames.map((frame) => {
             const { id, image, name, acronym } = frame;
-
             return (
-              <div
+              <Link
                 key={id}
-                className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-y-auto"
+                href={`/review/${acronym}`}
+                prefetch={true}
+                className="no-underline text-inherit"
               >
-                <div className="relative h-40 flex items-center justify-center p-4">
-                  {/* Image container with fixed dimensions */}
-                  <div className="relative w-full h-full max-h-32 flex items-center justify-center">
-                    <Link key={id} href={`/review/${acronym}`} prefetch={true}>
+                <div className="flex flex-col cursor-pointer shadow-md rounded-lg overflow-hidden ">
+                  <div className="relative h-40 flex items-center justify-center p-4 bg-muted/40">
+                    <div className="relative w-full h-full max-h-32 flex items-center justify-center">
                       <Image
                         width={150}
                         height={150}
                         src={image}
                         alt={`${name} logo`}
                         className="max-w-full max-h-full object-contain"
-                        style={{ maxHeight: "150px" }}
+                        style={{ maxHeight: "128px" }}
+                        // unoptimized={image?.endsWith(".svg")}
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.png";
+                        }}
                       />
-                    </Link>
+                    </div>
+                  </div>
+                  <div className="p-4 text-center ">
+                    <p className="text-base font-medium text-card-foreground">
+                      {name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{acronym}</p>
                   </div>
                 </div>
-                <div className="p-4 text-center ">
-                  <p className="text-base font-medium">{name}</p>
-                </div>
-              </div>
+              </Link>
             );
           })}
         </div>
       ) : (
-        // Desktop layout - grid with hover effects + proper scrolling
         <div
-          className="relative w-full grid gap-3" // Reduced gap for stability
+          className="relative w-full grid gap-4"
           style={{
-            gridTemplateRows: getGridTemplate("rows"),
-            gridTemplateColumns: getGridTemplate("columns"),
-            transition:
-              "grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1), " +
-              "grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-            minHeight: `${minGridHeight}px`,
+            gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${totalGridRows}, auto)`,
+            paddingBottom: "20px",
           }}
         >
           {frames.map((frame) => {
-            const { id, defaultPos, image, name, acronym, isHovered } = frame;
-            const row = Math.floor(defaultPos.y / CELL_SIZE_GRID_UNITS);
-            const col = Math.floor(defaultPos.x / CELL_SIZE_GRID_UNITS);
+            const { id, image, name, acronym } = frame;
+            const isHovered = id === hoveredFrameId;
 
             return (
               <motion.div
                 key={id}
-                className={`relative flex flex-col cursor-pointer group overflow-hidden rounded-lg ${
+                className={`relative flex flex-col cursor-pointer group rounded-lg overflow-hidden shadow-md  ${
                   isHovered ? "z-20" : "z-10"
                 }`}
-                onMouseEnter={() => handleFrameHover(row, col, id)}
-                onMouseLeave={() => setHoveredFrame(null)}
-                layout // Enable layout animations
-                transition={{ duration: 0.3 }}
+                onMouseEnter={() => handleFrameHover(id)}
+                onMouseLeave={() => handleFrameHover(null)}
+                layout
+                animate={{
+                  scale: isHovered ? HOVER_SCALE_FACTOR : 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25,
+                }}
               >
-                <div className="relative flex-1 w-full h-full">
-                  <Link key={id} href={`/review/${acronym}`} prefetch={true}>
-                    <FrameComponent
-                      image={image}
-                      width="100%"
-                      height="100%"
-                      className="flex-1 transition-transform duration-300"
-                      label={name}
-                      isHovered={isHovered}
-                      showFrame={isHovered}
-                    />
-                  </Link>
-                </div>
-                <motion.p
-                  className="text-center p-2 text-sm font-medium"
-                  animate={{ opacity: isHovered ? 1 : 0.8 }}
+                <Link
+                  href={`/review/${acronym}`}
+                  prefetch={true}
+                  className="flex flex-col flex-1 h-full no-underline text-inherit"
                 >
-                  {name}
-                </motion.p>
+                  <div className="relative flex-1 w-full h-40 flex items-center justify-center p-4 bg-muted/40">
+                    <Image
+                      src={image}
+                      width={150}
+                      height={150}
+                      className="max-h-full max-w-full object-contain"
+                      alt={`${name} logo`}
+                      style={{ maxHeight: "128px" }}
+                      unoptimized={image?.endsWith(".svg")}
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.png";
+                      }}
+                    />
+                  </div>
+                  <motion.div
+                    className="p-3 text-center"
+                    initial={false}
+                    animate={{
+                      backgroundColor: "blur(100px)",
+                      opacity: isHovered ? 2 : 1,
+                      transition: {
+                        duration: 0.3,
+                      },
+                      scale: isHovered ? 1.3 : 1,
+                    }}
+                  >
+                    <p
+                      className="text-sm font-medium text-card-foreground truncate"
+                      title={name}
+                    >
+                      {name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{acronym}</p>
+                  </motion.div>
+                </Link>
               </motion.div>
             );
           })}
         </div>
       )}
-      {/* Pagination controls */}
-      {filteredUniversities.length > 0 && (
-        <div className="w-full flex justify-center items-center gap-4 py-6">
+      {totalPages > 1 && (
+        <div className="w-full flex justify-center items-center gap-4 py-8 mt-4">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-5 py-2 bg-white rounded-2xl disabled:opacity-50  transition-colors text-black "
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-opacity text-sm font-medium"
           >
             Previous
           </button>
-          <span className="text-sm text-gray-600">
-            Page {currentPage} of{" "}
-            {Math.ceil(filteredUniversities.length / itemsPerPage)}
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() =>
-              setCurrentPage((p) =>
-                Math.min(
-                  Math.ceil(filteredUniversities.length / itemsPerPage),
-                  p + 1
-                )
-              )
-            }
-            disabled={
-              currentPage ===
-              Math.ceil(filteredUniversities.length / itemsPerPage)
-            }
-            className="px-5 py-2 bg-white disabled:opacity-50 text-black transition-colors rounded-2xl"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-opacity text-sm font-medium"
           >
             Next
           </button>
