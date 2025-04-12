@@ -167,10 +167,6 @@ export default function DynamicFrameLayout() {
                         alt={`${name} logo`}
                         className="max-w-full max-h-full object-contain"
                         style={{ maxHeight: "128px" }}
-                        // unoptimized={image?.endsWith(".svg")}
-                        onError={(e) => {
-                          e.currentTarget.src = "/placeholder.png";
-                        }}
                       />
                     </div>
                   </div>
@@ -230,9 +226,6 @@ export default function DynamicFrameLayout() {
                       alt={`${name} logo`}
                       style={{ maxHeight: "128px" }}
                       unoptimized={image?.endsWith(".svg")}
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.png";
-                      }}
                     />
                   </div>
                   <motion.div
